@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   schedule:
     # nightly (0th hour 0th minute of every day)
-    - cron: '* 42 * * *'
+    - cron: '1 11 * * *'
 
 jobs:
   build:
