@@ -10,17 +10,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check for recent changes
+      id: check_for_changes
       run: |
         commitdate=$(curl -sL "https://api.github.com/repos/pilight/pilight/commits/master" | jq -r ".commit.author.date")
         commitdays=$(( ( $(date --utc +%s) - $(date --utc -d $commitdate +%s) ) / 86400 ))
-        if [ $commitdays -gt -1 ]; then
-          echo "::set-env name=changes_exist::true"
+        echo "Last commit was $commitdays days ago."
+        if [ $commitdays -lt 2 ]; then
+          echo "::set-output name=changes_exist::true"
+          echo "Schedule following steps to RUN."
         else
-          echo "::set-env name=changes_exist::true"
+          echo "::set-output name=changes_exist::false"
+          echo "Schedule following steps to NOT RUN."
         fi
 
     - name: Mirror
-      if: ${{ env.changes_exist == 'true' }}
+      if: ${{ steps.check_for_changes.outputs.changes_exist == 'true' }}
       run: |
         git clone --mirror 'https://github.com/pilight/pilight' mux.git
         cd mux.git
